@@ -1,0 +1,1600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WattWise - Smart Classroom Energy Monitoring & AI Anomaly Detection</title>
+  <!-- Modern Typography & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --bg: #0b1319;
+      --surface: #121e27;
+      --card: #182835;
+      --border: #223a4d;
+      --text: #e6f1f8;
+      --text-mute: #8ca3b8;
+      --primary: #00d287;
+      --primary-glow: rgba(0, 210, 135, 0.25);
+      --accent: #ffb703;
+      --accent-glow: rgba(255, 183, 3, 0.25);
+      --danger: #ff4d6d;
+      --danger-bg: rgba(255, 77, 109, 0.15);
+      --danger-border: #ff4d6d;
+      --success: #00d287;
+      --success-bg: rgba(0, 210, 135, 0.15);
+      --blue: #00b4d8;
+      --purple: #9d4edd;
+      --font-sans: 'Plus Jakarta Sans', system-ui, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      line-height: 1.5;
+      min-height: 100vh;
+      padding-bottom: 50px;
+    }
+
+    header {
+      background: linear-gradient(180deg, #162430 0%, #0e1720 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(8px);
+    }
+    .header-content {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .brand-logo {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, var(--primary) 0%, #0096c7 100%);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 20px;
+      color: #0b1319;
+      box-shadow: 0 0 15px var(--primary-glow);
+    }
+    .brand-title h1 {
+      font-size: 1.25rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+    .brand-title h1 span { color: var(--primary); }
+    .brand-title p {
+      font-size: 0.78rem;
+      color: var(--text-mute);
+    }
+
+    .status-badges {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.75rem;
+      font-family: var(--font-mono);
+      padding: 4px 10px;
+      border-radius: 20px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+    }
+    .badge-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--primary);
+      box-shadow: 0 0 8px var(--primary);
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.9); }
+    }
+
+    /* Guided Review Controller Bar */
+    .reviewer-banner {
+      background: linear-gradient(90deg, #1b263b 0%, #0d1b2a 100%);
+      border-bottom: 1px solid #415a77;
+      padding: 12px 24px;
+    }
+    .reviewer-content {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .reviewer-label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--accent);
+    }
+    .reviewer-steps {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .step-btn {
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-size: 0.78rem;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .step-btn:hover {
+      background: var(--border);
+      border-color: var(--accent);
+      color: #fff;
+    }
+    .step-btn.active {
+      background: var(--accent);
+      color: #0b1319;
+      border-color: var(--accent);
+      box-shadow: 0 0 10px var(--accent-glow);
+    }
+    .demo-speech-box {
+      width: 100%;
+      background: rgba(255, 183, 3, 0.08);
+      border-left: 3px solid var(--accent);
+      padding: 8px 12px;
+      font-size: 0.82rem;
+      color: #ffd166;
+      border-radius: 0 6px 6px 0;
+      margin-top: 6px;
+      display: none;
+    }
+
+    /* Container Grid */
+    .container {
+      max-width: 1400px;
+      margin: 20px auto 0;
+      padding: 0 20px;
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 18px;
+    }
+
+    /* Common Card Styles */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px;
+      min-width: 0;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      padding-bottom: 10px;
+    }
+    .card-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .card-tag {
+      font-size: 0.7rem;
+      font-family: var(--font-mono);
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text-mute);
+    }
+
+    /* Grid Spans */
+    .c-3 { grid-column: span 3; }
+    .c-4 { grid-column: span 4; }
+    .c-5 { grid-column: span 5; }
+    .c-6 { grid-column: span 6; }
+    .c-7 { grid-column: span 7; }
+    .c-8 { grid-column: span 8; }
+    .c-9 { grid-column: span 9; }
+    .c-12 { grid-column: span 12; }
+
+    @media (max-width: 1100px) {
+      .c-3, .c-4, .c-5, .c-6, .c-7, .c-8, .c-9 { grid-column: span 12; }
+    }
+
+    /* Hardware Controls */
+    .control-group {
+      margin-bottom: 14px;
+    }
+    .control-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      color: var(--text-mute);
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+    .control-val {
+      color: var(--primary);
+      font-family: var(--font-mono);
+      font-weight: 700;
+    }
+    .btn-row {
+      display: flex;
+      gap: 8px;
+    }
+    button, select, input[type=number] {
+      font-family: inherit;
+      color: var(--text);
+      background: var(--card);
+      border: 1px solid var(--border);
+      padding: 9px 14px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      outline: none;
+    }
+    button:hover {
+      border-color: var(--primary);
+      background: #1e3243;
+    }
+    .btn-toggle {
+      flex: 1;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .btn-toggle.active-load {
+      background: linear-gradient(135deg, var(--accent) 0%, #e09f00 100%);
+      color: #0b1319;
+      border-color: var(--accent);
+      box-shadow: 0 0 15px var(--accent-glow);
+    }
+    .btn-fault {
+      background: rgba(255, 77, 109, 0.1);
+      border-color: rgba(255, 77, 109, 0.4);
+      color: #ff758f;
+      font-weight: 600;
+    }
+    .btn-fault:hover {
+      background: var(--danger);
+      color: #fff;
+      border-color: var(--danger);
+    }
+    .btn-occ {
+      flex: 1;
+      font-weight: 600;
+    }
+    .btn-occ.selected-occ {
+      background: var(--primary);
+      color: #0b1319;
+      border-color: var(--primary);
+      box-shadow: 0 0 12px var(--primary-glow);
+    }
+    .btn-occ.selected-empty {
+      background: #5c677d;
+      color: #fff;
+      border-color: #5c677d;
+    }
+
+    input[type=range] {
+      width: 100%;
+      height: 6px;
+      background: var(--card);
+      border-radius: 3px;
+      accent-color: var(--primary);
+      cursor: pointer;
+    }
+    select {
+      width: 100%;
+      background: var(--card);
+    }
+
+    /* Signal Chain Box */
+    .signal-chain {
+      background: #0f1821;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      margin-top: 14px;
+    }
+    .signal-chain-title {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-mute);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .chain-nodes {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      font-family: var(--font-mono);
+      font-size: 0.73rem;
+    }
+    .chain-node {
+      background: var(--card);
+      border: 1px solid var(--border);
+      padding: 5px 9px;
+      border-radius: 6px;
+      white-space: nowrap;
+      color: var(--text);
+    }
+    .chain-node span { color: var(--primary); font-weight: 700; }
+    .chain-arrow { color: var(--text-mute); font-size: 0.8rem; }
+
+    /* Live Stat Tiles */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .stat-tile {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      transition: transform 0.2s ease;
+    }
+    .stat-tile:hover {
+      transform: translateY(-2px);
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+    .stat-tile small {
+      display: block;
+      font-size: 0.72rem;
+      color: var(--text-mute);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .stat-tile b {
+      display: block;
+      font-size: 1.4rem;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      color: #fff;
+      margin-top: 2px;
+    }
+
+    /* Charts */
+    .chart-container {
+      position: relative;
+      height: 240px;
+      width: 100%;
+    }
+
+    /* DNN Section */
+    .verdict-box {
+      border-radius: 10px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+      transition: all 0.3s ease;
+    }
+    .verdict-box.normal {
+      background: var(--success-bg);
+      border: 1px solid var(--success);
+      color: #70e000;
+    }
+    .verdict-box.abnormal {
+      background: var(--danger-bg);
+      border: 1px solid var(--danger-border);
+      color: #ff4d6d;
+      animation: alertPulse 1.5s infinite;
+    }
+    @keyframes alertPulse {
+      0%, 100% { box-shadow: 0 0 10px rgba(255, 77, 109, 0.2); }
+      50% { box-shadow: 0 0 25px rgba(255, 77, 109, 0.5); }
+    }
+    .verdict-title {
+      font-size: 1.1rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .verdict-score {
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      font-weight: 700;
+    }
+
+    .progress-bar-bg {
+      height: 10px;
+      background: var(--card);
+      border-radius: 5px;
+      overflow: hidden;
+      margin: 8px 0 14px;
+      border: 1px solid var(--border);
+    }
+    .progress-bar-fill {
+      height: 100%;
+      width: 5%;
+      background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 70%, var(--danger) 100%);
+      transition: width 0.3s ease;
+    }
+
+    /* Neural Network Visualizer Canvas */
+    .nn-visualizer-box {
+      background: #0f1821;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px;
+      margin-top: 10px;
+      text-align: center;
+    }
+    .nn-canvas {
+      width: 100%;
+      height: 140px;
+      display: block;
+    }
+
+    /* Generative AI Section */
+    .ai-card {
+      background: linear-gradient(145deg, #172635 0%, #111e29 100%);
+      border: 1px solid #2b455b;
+      position: relative;
+      overflow: hidden;
+    }
+    .ai-card::before {
+      content: '';
+      position: absolute;
+      top: -50px;
+      right: -50px;
+      width: 120px;
+      height: 120px;
+      background: radial-gradient(circle, rgba(0, 180, 216, 0.15) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .ai-section {
+      background: rgba(11, 19, 25, 0.6);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 10px;
+    }
+    .ai-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--blue);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 4px;
+    }
+    .ai-text {
+      font-size: 0.85rem;
+      line-height: 1.5;
+      color: var(--text);
+    }
+    .ai-impact-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .impact-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px;
+      text-align: center;
+    }
+    .impact-box small {
+      font-size: 0.68rem;
+      color: var(--text-mute);
+      display: block;
+    }
+    .impact-box b {
+      font-size: 0.95rem;
+      font-family: var(--font-mono);
+      color: var(--accent);
+    }
+
+    /* Tabs & Hardware Schematic */
+    .tabs-nav {
+      display: flex;
+      gap: 10px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 16px;
+    }
+    .tab-btn {
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      border-radius: 0;
+      padding: 8px 16px;
+      font-weight: 600;
+      color: var(--text-mute);
+    }
+    .tab-btn.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+    }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* Schematic Box */
+    .schematic-wrapper {
+      background: #0d161f;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      text-align: center;
+    }
+    .schematic-svg {
+      max-width: 100%;
+      height: auto;
+    }
+
+    /* Event Log Table */
+    .log-list {
+      list-style: none;
+      max-height: 220px;
+      overflow-y: auto;
+    }
+    .log-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 7px 10px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      font-size: 0.78rem;
+    }
+    .log-item:hover { background: rgba(255, 255, 255, 0.02); }
+    .log-time { font-family: var(--font-mono); color: var(--text-mute); min-width: 70px; }
+    .log-desc { flex: 1; margin: 0 12px; }
+    .log-badge {
+      font-size: 0.68rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-family: var(--font-mono);
+    }
+    .badge-ok { background: var(--success-bg); color: var(--success); }
+    .badge-alert { background: var(--danger-bg); color: var(--danger); }
+
+    /* Technical Tooltips & Code Highlights */
+    .formula-tag {
+      font-family: var(--font-mono);
+      background: #111e29;
+      border: 1px solid var(--border);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.72rem;
+      color: var(--accent);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Header Navigation -->
+  <header>
+    <div class="header-content">
+      <div class="brand">
+        <div class="brand-logo">W</div>
+        <div class="brand-title">
+          <h1>Watt<span>Wise</span> &bull; IoT &bull; DNN &bull; GenAI</h1>
+          <p>Classroom Energy Optimization & Autonomous Anomaly Reasoning System</p>
+        </div>
+      </div>
+      <div class="status-badges">
+        <div class="badge"><span class="badge-dot"></span> ESP32-S3: <span>SIMULATED ADC</span></div>
+        <div class="badge"><span class="badge-dot" style="background:var(--blue);box-shadow:0 0 8px var(--blue)"></span> DNN: <span id="dnnStatusText">4&rarr;8&rarr;1 TRAINED</span></div>
+        <div class="badge"><span class="badge-dot" style="background:var(--purple);box-shadow:0 0 8px var(--purple)"></span> GenAI: <span>ACTIVE REASONING</span></div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Guided 2-Minute Reviewer Controller -->
+  <div class="reviewer-banner">
+    <div class="reviewer-content">
+      <div class="reviewer-label">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+        <span>EXAMINER 2-MIN REVIEW CONTROLLER:</span>
+      </div>
+      <div class="reviewer-steps">
+        <button class="step-btn active" onclick="runReviewStep(1)">1. Baseline Idle</button>
+        <button class="step-btn" onclick="runReviewStep(2)">2. Normal Load (Class)</button>
+        <button class="step-btn" onclick="runReviewStep(3)">3. Energy Waste (Unexpected Vacancy)</button>
+        <button class="step-btn" onclick="runReviewStep(4)">4. Night Consumption</button>
+        <button class="step-btn" onclick="runReviewStep(5)">5. Current Surge Fault</button>
+      </div>
+      <div class="demo-speech-box" id="reviewSpeech">
+        <strong>Reviewer Talking Point:</strong> "The system is currently at idle baseline. The ACS712 outputs 2500mV null offset. The DNN classifies this as an expected zero-current idle state."
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Dashboard Container -->
+  <div class="container">
+
+    <!-- Column 1: Hardware Inputs & Physical Controls (Span 4) -->
+    <section class="card c-4" aria-label="Hardware & Sensor Controls">
+      <div class="card-header">
+        <div class="card-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="4"></rect><path d="m9 12 2 2 4-4"></path></svg>
+          IoT Sensor & Load Inputs
+        </div>
+        <div class="card-tag">ESP32-S3 + ACS712</div>
+      </div>
+
+      <!-- DC Load Switch -->
+      <div class="control-group">
+        <div class="control-label">
+          <span>DC Classroom Load (Fan/Lighting)</span>
+          <span class="control-val" id="loadStateText">OFF</span>
+        </div>
+        <div class="btn-row">
+          <button class="btn-toggle" id="loadBtn" onclick="toggleLoad()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path><line x1="12" y1="2" x2="12" y2="12"></line></svg>
+            <span id="loadBtnText">Switch Load ON</span>
+          </button>
+          <button class="btn-fault" onclick="injectSpike()" title="Simulate a 1.6A short-circuit or electrical defect">
+            ⚡ Inject Spike
+          </button>
+        </div>
+      </div>
+
+      <!-- Load Current Slider -->
+      <div class="control-group">
+        <div class="control-label">
+          <span>Current Draw Level</span>
+          <span class="control-val"><span id="currSliderVal">0.40</span> A</span>
+        </div>
+        <input type="range" id="currSlider" min="0.10" max="1.50" step="0.05" value="0.40" oninput="updateCurrentSlider(this.value)">
+      </div>
+
+      <!-- Supply Voltage -->
+      <div class="control-group">
+        <div class="control-label">
+          <span>Supply Voltage (Configured in V)</span>
+          <span class="control-val"><span id="voltValDisplay">5.0</span> V</span>
+        </div>
+        <div class="btn-row">
+          <input type="number" id="voltInput" value="5.0" min="1" max="240" step="0.5" style="width: 100%;" onchange="updateVoltage(this.value)">
+        </div>
+      </div>
+
+      <!-- Room Type Selector (Incorporates Schedule & Occupancy) -->
+      <div class="control-group">
+        <div class="control-label">
+          <span>ROOM TYPE &amp; SCHEDULE</span>
+          <span class="control-val" id="roomTypeLabel">Normal Class</span>
+        </div>
+        <select id="roomTypeSelect" onchange="setRoomType(this.value)">
+          <option value="normal_class">Normal Class (08:00 &ndash; 17:00 Class Hours)</option>
+          <option value="after_hours">After-Hours / Night (School Closed)</option>
+          <option value="laboratory">Laboratory Session</option>
+          <option value="closed">Closed Facility</option>
+        </select>
+      </div>
+
+      <!-- Automatic Occupancy (Read-Only) -->
+      <div class="control-group">
+        <div class="control-label">
+          <span>AUTOMATIC OCCUPANCY</span>
+          <span class="control-val" id="occStatusBadge">🟢 Occupied</span>
+        </div>
+        <div style="background:var(--card); border:1px solid var(--border); border-radius:8px; padding:10px 14px; display:flex; align-items:center; justify-content:space-between;">
+          <span id="occStatusText" style="font-weight:700; font-size:0.92rem; display:flex; align-items:center; gap:6px;">🟢 Occupied</span>
+          <small style="color:var(--text-mute); font-size:0.75rem;">Determined automatically by room type</small>
+        </div>
+      </div>
+
+      <!-- Live Signal Chain Flow -->
+      <div class="signal-chain">
+        <div class="signal-chain-title">
+          <span>Physical Hardware Signal Path</span>
+          <span class="formula-tag">ACS712 185mV/A</span>
+        </div>
+        <div class="chain-nodes" id="chainNodes">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+    </section>
+
+    <!-- Column 2: Live Telemetry & Graph (Span 8) -->
+    <section class="card c-8" aria-label="Live Telemetry and Graphical Trends">
+      <div class="card-header">
+        <div class="card-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+          Live Electrical Telemetry & Power Waveform
+        </div>
+        <div class="card-tag">Sampling: 1 Hz &bull; ADC 12-bit</div>
+      </div>
+
+      <!-- Stat Tiles -->
+      <div class="stats-grid">
+        <div class="stat-tile">
+          <small>Current (I)</small>
+          <b id="dispCurrent">0.000 A</b>
+        </div>
+        <div class="stat-tile">
+          <small>Voltage (V)</small>
+          <b id="dispVoltage">5.0 V</b>
+        </div>
+        <div class="stat-tile">
+          <small>Power (P = V&times;I)</small>
+          <b id="dispPower" style="color:var(--accent)">0.00 W</b>
+        </div>
+        <div class="stat-tile">
+          <small>Energy Used</small>
+          <b id="dispEnergy">0.0 mWh</b>
+        </div>
+        <div class="stat-tile">
+          <small>Occupancy</small>
+          <b id="dispOccupancy" style="color:var(--primary)">Occupied</b>
+        </div>
+        <div class="stat-tile">
+          <small>Room Schedule</small>
+          <b id="dispContext" style="color:var(--blue); font-size:1.05rem;">Class Hours</b>
+        </div>
+      </div>
+
+      <!-- Chart.js Graph -->
+      <div class="chart-container">
+        <canvas id="liveChart"></canvas>
+      </div>
+    </section>
+
+    <!-- Column 3: DNN Anomaly Detection Engine (Span 6) -->
+    <section class="card c-6" aria-label="Deep Neural Network Engine">
+      <div class="card-header">
+        <div class="card-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+          Deep Neural Network (DNN) Anomaly Classifier
+        </div>
+        <div class="card-tag">Topology: 4 &rarr; 8 &rarr; 1</div>
+      </div>
+
+      <!-- Anomaly Verdict Banner -->
+      <div class="verdict-box normal" id="verdictBox">
+        <div class="verdict-title">
+          <span id="verdictIcon">✔</span>
+          <span id="verdictText">NORMAL PATTERN</span>
+        </div>
+        <div class="verdict-score" id="verdictScore">Score: 0.04 (Normal)</div>
+      </div>
+
+      <!-- Score Bar -->
+      <div class="control-label">
+        <span>Anomaly Probability Index [0.00 &rarr; 1.00]</span>
+        <span class="control-val" id="scoreBarLabel">4%</span>
+      </div>
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" id="scoreBarFill"></div>
+      </div>
+
+      <!-- Live Neural Network Graph Visualization -->
+      <div class="nn-visualizer-box">
+        <div class="signal-chain-title">
+          <span>Live Synaptic Activations [Input &rarr; Hidden &rarr; Output]</span>
+          <span id="dnnAccLabel" class="formula-tag">Accuracy: 98.4%</span>
+        </div>
+        <canvas class="nn-canvas" id="nnCanvas" width="450" height="140"></canvas>
+      </div>
+
+      <p style="font-size:0.75rem; color:var(--text-mute); margin-top:8px;">
+        Features: <code class="formula-tag">I/1.5</code>, <code class="formula-tag">Occ</code>, <code class="formula-tag">SchoolHours</code>, <code class="formula-tag">&Delta;I</code>. Trained on 400 classroom operational states via Stochastic Gradient Descent.
+      </p>
+    </section>
+
+    <!-- Column 4: Generative AI Reasoning & Remediation (Span 6) -->
+    <section class="card c-6 ai-card" aria-label="Generative AI Engine">
+      <div class="card-header">
+        <div class="card-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path></svg>
+          Generative AI Explanation & Decision Engine
+        </div>
+        <div class="card-tag" style="background:rgba(0,180,216,0.15);color:var(--blue)">Contextual LLM Reasoning</div>
+      </div>
+
+      <!-- Why: Diagnostic Cause -->
+      <div class="ai-section">
+        <div class="ai-label">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+          Root Cause Diagnosis ("Why")
+        </div>
+        <div class="ai-text" id="aiWhyText">
+          The load is switched off and current is zero. This corresponds to normal standby behavior.
+        </div>
+      </div>
+
+      <!-- Recommendation: Actionable Directive -->
+      <div class="ai-section">
+        <div class="ai-label" style="color:var(--accent)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+          Autonomous Recommendation ("Action")
+        </div>
+        <div class="ai-text" id="aiRecText">
+          No manual intervention needed. Continue normal scheduling.
+        </div>
+      </div>
+
+      <!-- Impact Metrics -->
+      <div class="ai-impact-grid">
+        <div class="impact-box">
+          <small>8-Hr Waste Projection</small>
+          <b id="aiWasteVal">0.000 kWh</b>
+        </div>
+        <div class="impact-box">
+          <small>Financial Penalty</small>
+          <b id="aiCostVal">&#8377;0.00</b>
+        </div>
+        <div class="impact-box">
+          <small>CO&#8322; Emission Impact</small>
+          <b id="aiCarbonVal">0 g</b>
+        </div>
+      </div>
+
+      <div style="margin-top:10px; font-size:0.72rem; color:var(--text-mute);">
+        <em>Note for Reviewers: In production, the Flask backend forwards the telemetry vector to the LLM endpoint for dynamic natural-language generation.</em>
+      </div>
+    </section>
+
+    <!-- Column 5: Physical Hardware Schematic & Live Event Log Tabs (Span 12) -->
+    <section class="card c-12">
+      <div class="tabs-nav">
+        <button class="tab-btn active" onclick="switchTab('tab-schematic')">Physical Circuit Wiring & Hardware Schematic</button>
+        <button class="tab-btn" onclick="switchTab('tab-logs')">System Telemetry Audit Log (<span id="logCount">0</span>)</button>
+        <button class="tab-btn" onclick="switchTab('tab-architecture')">System Architecture & Mathematical Formulas</button>
+      </div>
+
+      <!-- Tab 1: Hardware Schematic -->
+      <div class="tab-content active" id="tab-schematic">
+        <div class="schematic-wrapper">
+          <svg class="schematic-svg" viewBox="0 0 900 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Background Box -->
+            <rect width="900" height="240" rx="10" fill="#0b1319" stroke="#223a4d" stroke-width="1.5"/>
+
+            <!-- DC Load Block -->
+            <rect x="30" y="50" width="130" height="140" rx="8" fill="#182835" stroke="#ffb703" stroke-width="2"/>
+            <text x="95" y="80" fill="#ffb703" font-family="'Plus Jakarta Sans',sans-serif" font-weight="700" font-size="14" text-anchor="middle">DC LOAD</text>
+            <text x="95" y="105" fill="#8ca3b8" font-family="'Plus Jakarta Sans',sans-serif" font-size="11" text-anchor="middle">Classroom Fan / Light</text>
+            <text x="95" y="145" fill="#e6f1f8" font-family="'JetBrains Mono',monospace" font-size="12" text-anchor="middle">5V &bull; 0.4A</text>
+
+            <!-- Wiring Load to ACS712 -->
+            <path d="M160 90 H220" stroke="#ffb703" stroke-width="3"/>
+            <path d="M160 150 H220" stroke="#8ca3b8" stroke-width="2" stroke-dasharray="4"/>
+            <text x="190" y="82" fill="#ffb703" font-family="'JetBrains Mono',monospace" font-size="10" text-anchor="middle">IP+</text>
+            <text x="190" y="142" fill="#8ca3b8" font-family="'JetBrains Mono',monospace" font-size="10" text-anchor="middle">IP-</text>
+
+            <!-- ACS712 Hall Sensor Block -->
+            <rect x="220" y="50" width="170" height="140" rx="8" fill="#182835" stroke="#00d287" stroke-width="2"/>
+            <text x="305" y="78" fill="#00d287" font-family="'Plus Jakarta Sans',sans-serif" font-weight="700" font-size="14" text-anchor="middle">ACS712 (5A MODULE)</text>
+            <text x="305" y="100" fill="#8ca3b8" font-family="'Plus Jakarta Sans',sans-serif" font-size="11" text-anchor="middle">Hall-Effect Isolated Current</text>
+            <text x="305" y="125" fill="#e6f1f8" font-family="'JetBrains Mono',monospace" font-size="11" text-anchor="middle">V_out = 2.5V + 0.185*I</text>
+            <text x="305" y="150" fill="#00b4d8" font-family="'JetBrains Mono',monospace" font-size="10" text-anchor="middle">VCC = 5V | GND = GND</text>
+
+            <!-- Line to Voltage Divider -->
+            <path d="M390 120 H450" stroke="#00d287" stroke-width="2.5"/>
+            <text x="420" y="112" fill="#00d287" font-family="'JetBrains Mono',monospace" font-size="10" text-anchor="middle">V_out</text>
+
+            <!-- Voltage Divider Block -->
+            <rect x="450" y="50" width="160" height="140" rx="8" fill="#182835" stroke="#00b4d8" stroke-width="2"/>
+            <text x="530" y="78" fill="#00b4d8" font-family="'Plus Jakarta Sans',sans-serif" font-weight="700" font-size="14" text-anchor="middle">VOLTAGE DIVIDER</text>
+            <text x="530" y="102" fill="#8ca3b8" font-family="'Plus Jakarta Sans',sans-serif" font-size="11" text-anchor="middle">R1 = 10k&Omega; | R2 = 20k&Omega;</text>
+            <text x="530" y="128" fill="#e6f1f8" font-family="'JetBrains Mono',monospace" font-size="11" text-anchor="middle">Ratio = 20k / 30k = 2/3</text>
+            <text x="530" y="155" fill="#ffb703" font-family="'JetBrains Mono',monospace" font-size="10" text-anchor="middle">Clamps 5V &rarr; 3.3V Safe</text>
+
+            <!-- Line to ESP32-S3 -->
+            <path d="M610 120 H670" stroke="#00b4d8" stroke-width="2.5"/>
+            <text x="640" y="112" fill="#00b4d8" font-family="'JetBrains Mono',monospace" font-size="10" text-anchor="middle">ADC Pin</text>
+
+            <!-- ESP32-S3 Microcontroller Block -->
+            <rect x="670" y="40" width="200" height="160" rx="8" fill="#182835" stroke="#9d4edd" stroke-width="2"/>
+            <text x="770" y="70" fill="#9d4edd" font-family="'Plus Jakarta Sans',sans-serif" font-weight="700" font-size="15" text-anchor="middle">ESP32-S3 SoC</text>
+            <text x="770" y="92" fill="#8ca3b8" font-family="'Plus Jakarta Sans',sans-serif" font-size="11" text-anchor="middle">Dual Xtensa LX7 @ 240MHz</text>
+            <rect x="685" y="105" width="170" height="26" rx="4" fill="#111e29" stroke="#223a4d"/>
+            <text x="770" y="122" fill="#70e000" font-family="'JetBrains Mono',monospace" font-size="11" text-anchor="middle">GPIO 4 &bull; ADC1_CH3</text>
+            <text x="770" y="152" fill="#e6f1f8" font-family="'JetBrains Mono',monospace" font-size="10" text-anchor="middle">Wi-Fi HTTP / MQTT POST</text>
+            <text x="770" y="172" fill="#00b4d8" font-family="'JetBrains Mono',monospace" font-size="10" text-anchor="middle">&rarr; Flask Backend Server</text>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Tab 2: Logs -->
+      <div class="tab-content" id="tab-logs">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+          <span style="font-size:0.8rem; color:var(--text-mute)">Real-Time Anomaly & Calibration Audit Trail</span>
+          <button onclick="downloadCSV()" style="padding:4px 10px; font-size:0.75rem;">Download Log as CSV</button>
+        </div>
+        <ul class="log-list" id="logList">
+          <!-- Dynamically populated -->
+        </ul>
+      </div>
+
+      <!-- Tab 3: System Architecture & Formulas -->
+      <div class="tab-content" id="tab-architecture">
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:16px; font-size:0.85rem;">
+          <div style="background:#0f1821; border:1px solid var(--border); border-radius:8px; padding:14px;">
+            <strong style="color:var(--primary); display:block; margin-bottom:6px;">1. Hall Effect Sensor Physics</strong>
+            <p>ACS712-05B operates at 5V $V_{CC}$. At zero current, output is quiescent midpoint ($V_{CC}/2 = 2500\text{mV}$). Each ampere changes output by $185\text{mV}$:</p>
+            <code class="formula-tag" style="display:block; margin:6px 0;">V_out = 2500mV + (185mV/A &times; I)</code>
+          </div>
+          <div style="background:#0f1821; border:1px solid var(--border); border-radius:8px; padding:14px;">
+            <strong style="color:var(--blue); display:block; margin-bottom:6px;">2. ESP32 ADC Protection Divider</strong>
+            <p>ESP32 ADC pins accept max $3.3\text{V}$. The $10\text{k}\Omega / 20\text{k}\Omega$ voltage divider scales ACS712 $5\text{V}$ output by $2/3 = 1/1.5$:</p>
+            <code class="formula-tag" style="display:block; margin:6px 0;">V_ADC = V_out &times; (20k / (10k + 20k)) = V_out / 1.5</code>
+            <p>Firmware reconstructs: <code class="formula-tag">I = ((V_ADC &times; 1.5) - 2500) / 185</code></p>
+          </div>
+          <div style="background:#0f1821; border:1px solid var(--border); border-radius:8px; padding:14px;">
+            <strong style="color:var(--accent); display:block; margin-bottom:6px;">3. Deep Neural Network Classifier</strong>
+            <p>A $4 \to 8 \to 1$ Multi-Layer Perceptron trained on normalized features with Sigmoid activations:</p>
+            <code class="formula-tag" style="display:block; margin:6px 0;">&sigma;(z) = 1 / (1 + e^-z)</code>
+            <p>Flagged when $y \ge 0.50$ (Empty + Load, After-Hours, or Surge).</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- Simulation, DNN & GenAI JavaScript Engine -->
+  <script>
+    // Helper function
+    const $ = id => document.getElementById(id);
+
+    // Global State
+    const S = {
+      load: false,
+      level: 0.40,
+      V: 5.0,
+      occ: 1,           // 1 = Occupied, 0 = Empty (automatically calculated)
+      roomType: 'normal_class', // 'normal_class', 'after_hours', 'laboratory', 'closed'
+      scenarioVacancy: false,   // Internal scenario override for Energy Waste demonstration
+      faultTimer: 0,
+      E: 0,             // Accumulated energy in mWh
+      prevI: 0,
+      lastAnom: null,
+      historyLogs: []
+    };
+
+    const rnd = (a = 1) => (Math.random() * 2 - 1) * a;
+
+    /* ==========================================================
+       AUTOMATIC OCCUPANCY & SCHEDULE LOGIC (BY ROOM TYPE)
+       ========================================================== */
+    function calculateOccupancy(roomType) {
+      if (S.scenarioVacancy) {
+        return 0; // Classroom Empty Override / Unexpected Vacancy for Energy Waste demonstration
+      }
+      if (roomType === 'normal_class') {
+        return 1; // Normal Class (08:00 - 17:00 Class Hours) -> Occupied
+      }
+      // After-Hours, Laboratory, Closed -> Empty
+      return 0;
+    }
+
+    function getSchoolHours(roomType) {
+      // 1 = Institutional Active Hours, 0 = After-Hours / Closed
+      if (roomType === 'normal_class' || roomType === 'laboratory') {
+        return 1;
+      }
+      return 0; // after_hours or closed
+    }
+
+    function formatRoomTypeName(type) {
+      if (type === 'normal_class') return 'Normal Class (Class Hours)';
+      if (type === 'after_hours') return 'After-Hours / Night';
+      if (type === 'laboratory') return 'Laboratory Session';
+      if (type === 'closed') return 'Closed Facility';
+      return type;
+    }
+
+    function getContextLabel(type) {
+      if (type === 'normal_class') return 'Class Hours';
+      if (type === 'after_hours') return 'Night / Closed';
+      if (type === 'laboratory') return 'Lab Session';
+      if (type === 'closed') return 'Facility Closed';
+      return 'Standard';
+    }
+
+    function updateRoomTypeLabel(type) {
+      if ($('roomTypeLabel')) $('roomTypeLabel').textContent = formatRoomTypeName(type);
+    }
+
+    function updateOccupancyUI() {
+      const isOcc = S.occ === 1;
+      let badgeHtml = '';
+      let textHtml = '';
+      if (S.scenarioVacancy) {
+        badgeHtml = '<span style="color:var(--danger)">🔴 Empty</span>';
+        textHtml = '<span style="color:var(--danger);display:flex;align-items:center;gap:6px;">🔴 Empty <small style="font-weight:400;color:var(--accent);">(Unexpected Vacancy)</small></span>';
+      } else if (isOcc) {
+        badgeHtml = '<span style="color:var(--primary)">🟢 Occupied</span>';
+        textHtml = '<span style="color:var(--primary);display:flex;align-items:center;gap:6px;">🟢 Occupied</span>';
+      } else {
+        badgeHtml = '<span style="color:var(--danger)">🔴 Empty</span>';
+        textHtml = '<span style="color:var(--danger);display:flex;align-items:center;gap:6px;">🔴 Empty</span>';
+      }
+      if ($('occStatusBadge')) $('occStatusBadge').innerHTML = badgeHtml;
+      if ($('occStatusText')) $('occStatusText').innerHTML = textHtml;
+      if ($('dispOccupancy')) {
+        $('dispOccupancy').textContent = isOcc ? 'Occupied' : 'Empty';
+        $('dispOccupancy').style.color = isOcc ? 'var(--primary)' : 'var(--danger)';
+      }
+      if ($('dispContext')) {
+        $('dispContext').textContent = getContextLabel(S.roomType);
+      }
+    }
+
+    function setRoomType(type) {
+      S.roomType = type;
+      S.scenarioVacancy = false; // Reset unexpected vacancy override if user manually changes room type
+      updateRoomTypeLabel(type);
+      S.occ = calculateOccupancy(S.roomType);
+      updateOccupancyUI();
+      addLog(`Room Type set to ${formatRoomTypeName(type)} (Auto Occupancy: ${S.occ ? 'Occupied' : 'Empty'})`, 'CONFIG', 'Room');
+      tick();
+    }
+
+    /* ==========================================================
+       1. DEEP NEURAL NETWORK (4 -> 8 -> 1) WITH IN-BROWSER SGD
+       ========================================================== */
+    const sig = x => 1 / (1 + Math.exp(-x));
+    const H = 8;
+    let W1 = [], b1 = [], W2 = [], b2 = 0;
+
+    // Weight Initialization
+    for (let j = 0; j < H; j++) {
+      W1.push([0, 1, 2, 3].map(() => rnd(0.8)));
+      b1.push(0);
+      W2.push(rnd(0.8));
+    }
+
+    const feat = (I, occ, sch, d) => [I / 1.5, occ, sch, d / 1.5];
+    const label = (I, occ, sch, d) => ((occ === 0 && I > 0.15) || I > 1.2 || (!sch && I > 0.15) || d > 0.85) ? 1 : 0;
+
+    function fwd(x) {
+      const h = W1.map((w, j) => sig(w[0]*x[0] + w[1]*x[1] + w[2]*x[2] + w[3]*x[3] + b1[j]));
+      const y = sig(h.reduce((s, v, j) => s + v * W2[j], b2));
+      return { h, y };
+    }
+
+    function trainDNN() {
+      const D = [];
+      for (let n = 0; n < 400; n++) {
+        const I = Math.random() < 0.45 ? Math.random() * 0.02 : Math.random() * 1.6;
+        const occ = Math.random() < 0.5 ? 1 : 0;
+        const sch = Math.random() < 0.5 ? 1 : 0;
+        const d = Math.random() < 0.8 ? Math.random() * 0.08 : Math.random() * 1.4;
+        D.push({ x: feat(I, occ, sch, d), t: label(I, occ, sch, d) });
+      }
+
+      for (let ep = 0; ep < 800; ep++) {
+        for (const s of D) {
+          const { h, y } = fwd(s.x);
+          const e = y - s.t;
+          const g = e * y * (1 - y);
+          for (let j = 0; j < H; j++) {
+            const gh = g * W2[j] * h[j] * (1 - h[j]);
+            W2[j] -= 0.35 * g * h[j];
+            for (let k = 0; k < 4; k++) W1[j][k] -= 0.35 * gh * s.x[k];
+            b1[j] -= 0.35 * gh;
+          }
+          b2 -= 0.35 * g;
+        }
+      }
+
+      let correct = 0;
+      for (const s of D) {
+        if ((fwd(s.x).y > 0.5 ? 1 : 0) === s.t) correct++;
+      }
+      return (correct / D.length * 100).toFixed(1);
+    }
+
+    const dnnAccuracy = trainDNN();
+    $('dnnAccLabel').textContent = 'Training Acc: ' + dnnAccuracy + '% (400 samples)';
+    $('dnnStatusText').textContent = '4→8→1 READY (' + dnnAccuracy + '%)';
+
+    /* ==========================================================
+       2. NEURAL NETWORK CANVAS VISUALIZER
+       ========================================================== */
+    function drawNeuralNet(xInputs, hActivations, outputY) {
+      const cvs = $('nnCanvas');
+      if (!cvs) return;
+      const ctx = cvs.getContext('2d');
+      const w = cvs.width, h = cvs.height;
+      ctx.clearRect(0, 0, w, h);
+
+      const inY = [25, 55, 85, 115];
+      const inX = 50;
+      const hidX = 225;
+      const outX = 400;
+      const outY = h / 2;
+
+      // Draw Synapses Input -> Hidden
+      for (let i = 0; i < 4; i++) {
+        for (let j = 0; j < H; j++) {
+          const hjY = 16 + j * 15;
+          ctx.beginPath();
+          ctx.moveTo(inX, inY[i]);
+          ctx.lineTo(hidX, hjY);
+          const weightVal = W1[j][i];
+          ctx.strokeStyle = weightVal > 0 ? `rgba(0, 210, 135, ${Math.min(0.8, Math.abs(weightVal))})` : `rgba(255, 77, 109, ${Math.min(0.8, Math.abs(weightVal))})`;
+          ctx.lineWidth = 0.8;
+          ctx.stroke();
+        }
+      }
+
+      // Draw Synapses Hidden -> Output
+      for (let j = 0; j < H; j++) {
+        const hjY = 16 + j * 15;
+        ctx.beginPath();
+        ctx.moveTo(hidX, hjY);
+        ctx.lineTo(outX, outY);
+        const w2 = W2[j];
+        ctx.strokeStyle = w2 > 0 ? `rgba(0, 210, 135, ${Math.min(0.9, Math.abs(w2))})` : `rgba(255, 77, 109, ${Math.min(0.9, Math.abs(w2))})`;
+        ctx.lineWidth = 1.0;
+        ctx.stroke();
+      }
+
+      // Draw Input Nodes
+      for (let i = 0; i < 4; i++) {
+        ctx.beginPath();
+        ctx.arc(inX, inY[i], 7, 0, Math.PI * 2);
+        const val = Math.max(0, Math.min(1, xInputs[i]));
+        ctx.fillStyle = `rgb(${Math.floor(val * 255)}, ${Math.floor(210 * val)}, 135)`;
+        ctx.fill();
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+
+      // Draw Hidden Nodes
+      for (let j = 0; j < H; j++) {
+        const hjY = 16 + j * 15;
+        const val = hActivations[j];
+        ctx.beginPath();
+        ctx.arc(hidX, hjY, 6, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(0, 180, 216, ${Math.max(0.2, val)})`;
+        ctx.fill();
+        ctx.strokeStyle = '#00b4d8';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+
+      // Draw Output Node
+      ctx.beginPath();
+      ctx.arc(outX, outY, 9, 0, Math.PI * 2);
+      ctx.fillStyle = outputY > 0.5 ? '#ff4d6d' : '#00d287';
+      ctx.fill();
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    }
+
+    /* ==========================================================
+       3. CHART.JS REAL-TIME SETUP
+       ========================================================== */
+    const ctx = $('liveChart').getContext('2d');
+    const chart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: [],
+        datasets: [{
+          label: 'Classroom Power (Watts)',
+          data: [],
+          borderColor: '#ffb703',
+          backgroundColor: 'rgba(255, 183, 3, 0.12)',
+          fill: true,
+          tension: 0.25,
+          pointRadius: 4,
+          pointHoverRadius: 6,
+          pointBackgroundColor: []
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: false,
+        scales: {
+          y: {
+            beginAtZero: true,
+            grid: { color: 'rgba(255, 255, 255, 0.05)' },
+            ticks: { color: '#8ca3b8' },
+            title: { display: true, text: 'Active Power (Watts)', color: '#8ca3b8' }
+          },
+          x: {
+            grid: { color: 'rgba(255, 255, 255, 0.05)' },
+            ticks: { color: '#8ca3b8', maxTicksLimit: 8 }
+          }
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: context => `Power: ${context.parsed.y} W`
+            }
+          }
+        }
+      }
+    });
+
+    /* ==========================================================
+       4. GENERATIVE AI REASONING & REMEDIATION ENGINE
+       ========================================================== */
+    function runGenerativeAI(I, P, anom, sch, d) {
+      let why = '', rec = '', urgency = 'LOW';
+      const kwhPerHour = P / 1000;
+      const kwh8h = (kwhPerHour * 8).toFixed(3);
+      const costRupees = (kwh8h * 7.5).toFixed(2); // Avg ₹7.5 / kWh commercial rate
+      const carbonG = (kwh8h * 820).toFixed(0);    // 820g CO2 per kWh grid avg
+
+      if (!anom && I < 0.05) {
+        why = "The load is switched OFF and current is at physical quiescent zero. This represents expected idle standby in an unused or passive classroom.";
+        rec = "Optimal state verified. No automated load tripping or human intervention is required.";
+        urgency = "NONE";
+      } else if (!anom) {
+        why = `Normal classroom operation detected: Room (${formatRoomTypeName(S.roomType)}) is occupied during ${sch ? 'official class hours' : 'evening'} with a stable current of ${I.toFixed(2)}A (${P.toFixed(2)}W).`;
+        rec = "Power usage correlates with scheduled academic activity. System continues continuous baseline telemetry monitoring.";
+        urgency = "NORMAL";
+      } else if (d > 0.85 || I > 1.2) {
+        why = `CRITICAL SURGE DETECTED: Current surged violently to ${I.toFixed(2)}A (&Delta;I = ${d.toFixed(2)}A). Exceeds safe operational ceiling for classroom loads.`;
+        rec = "Isolate circuit branch immediately. Inspect for an electrical short circuit, motor winding failure, or frayed cabling before resetting breaker.";
+        urgency = "CRITICAL";
+      } else if (!S.occ) {
+        if (S.scenarioVacancy) {
+          why = `ENERGY DRAIN ANOMALY: Classroom is unexpectedly empty while electrical loads are actively drawing ${P.toFixed(2)}W (${I.toFixed(2)}A).`;
+          rec = `Dispatch IoT trip signal to turn off fans/lighting. Left unattended for a standard 8-hour shift, this single classroom wastes ${kwh8h} kWh (₹${costRupees}). Automated relay cut-off recommended.`;
+        } else if (S.roomType === 'laboratory') {
+          why = `LABORATORY UNATTENDED CONSUMPTION: Laboratory is unreserved/empty in current schedule, yet equipment is drawing ${P.toFixed(2)}W (${I.toFixed(2)}A).`;
+          rec = `Verify if lab experiments require power. If not, trigger relay shut-off to save ${kwh8h} kWh.`;
+        } else if (S.roomType === 'closed') {
+          why = `CLOSED ROOM POWER LEAKAGE: Room is marked CLOSED, but active power draw of ${P.toFixed(2)}W is detected. Unnecessary energy consumption identified.`;
+          rec = `Inspect for phantom vampire loads or forgotten switches in closed room. Isolate power to save ${kwh8h} kWh.`;
+        } else if (!sch || S.roomType === 'after_hours') {
+          why = `AFTER-HOURS ENERGY USAGE DETECTED: Room is marked ${formatRoomTypeName(S.roomType)} (facility is closed), and room is automatically marked Empty, but active power draw of ${P.toFixed(2)}W is detected.`;
+          rec = "Verify security logs for after-hours cleaning or unauthorized entry. Trigger smart relay cutoff to eliminate phantom school load.";
+        } else {
+          why = `ENERGY DRAIN ANOMALY: Classroom is flagged EMPTY according to room schedule, yet loads are actively consuming ${P.toFixed(2)}W (${I.toFixed(2)}A).`;
+          rec = `Dispatch IoT trip signal to turn off fans/lighting. Left unattended for a standard 8-hour shift, this single classroom wastes ${kwh8h} kWh. Automated relay cut-off recommended.`;
+        }
+        urgency = "HIGH";
+      } else {
+        why = `AFTER-HOURS UNAUTHORIZED USE: Facility is closed (${formatRoomTypeName(S.roomType)}), but active power draw of ${P.toFixed(2)}W is detected.`;
+        rec = "Verify security logs for after-hours cleaning or unauthorized entry. Trigger smart relay cutoff to eliminate phantom school load.";
+        urgency = "MEDIUM";
+      }
+
+      $('aiWhyText').textContent = why;
+      $('aiRecText').textContent = rec;
+      $('aiWasteVal').textContent = `${kwh8h} kWh`;
+      $('aiCostVal').textContent = `₹${costRupees}`;
+      $('aiCarbonVal').textContent = `${carbonG} g`;
+    }
+
+    /* ==========================================================
+       5. PHYSICAL SIMULATION LOOP (1 Hz Sampling)
+       ========================================================== */
+    function tick() {
+      // 1. Physical current through ACS712 IP+ -> IP-
+      let I = (S.load ? S.level : 0) + rnd(0.005);
+      if (S.faultTimer > 0) {
+        I = 1.62 + rnd(0.03);
+        S.faultTimer--;
+      }
+      I = Math.max(0, I);
+
+      // 2. ACS712 5A: 2500mV null offset + 185mV/A
+      const outmV = 2500 + 185 * I + rnd(2);
+
+      // 3. 10k/20k Voltage divider (clamps 5V to 3.3V safe max)
+      const adcMilliVolts = outmV / 1.5;
+
+      // 4. ESP32-S3 Firmware Math Reconstruction
+      const reconstructedI = Math.max(0, (adcMilliVolts * 1.5 - 2500) / 185);
+      const P = S.V * reconstructedI;
+      S.E += (P / 3600) * 1000; // accumulate mWh
+
+      // 5. Environmental & Schedule Context from Room Type
+      const now = new Date();
+      const sch = getSchoolHours(S.roomType);
+      const d = Math.abs(reconstructedI - S.prevI);
+      S.prevI = reconstructedI;
+
+      // Calculate automatic occupancy based on room type
+      S.occ = calculateOccupancy(S.roomType);
+      updateOccupancyUI();
+
+      // 6. Execute DNN Forward Pass
+      const xInput = feat(reconstructedI, S.occ, sch, d);
+      const dnnRes = fwd(xInput);
+      const anomScore = dnnRes.y;
+      const isAnomaly = anomScore >= 0.50;
+
+      // Update Visual Neural Network Canvas
+      drawNeuralNet(xInput, dnnRes.h, anomScore);
+
+      // 7. Update UI Telemetry
+      $('dispCurrent').textContent = `${reconstructedI.toFixed(3)} A`;
+      $('dispVoltage').textContent = `${S.V.toFixed(1)} V`;
+      $('dispPower').textContent = `${P.toFixed(2)} W`;
+      $('dispEnergy').textContent = S.E > 1000 ? `${(S.E / 1000).toFixed(2)} Wh` : `${S.E.toFixed(1)} mWh`;
+      $('dispOccupancy').textContent = S.occ ? 'Occupied' : 'Empty';
+      $('dispOccupancy').style.color = S.occ ? 'var(--primary)' : 'var(--danger)';
+      if ($('dispContext')) $('dispContext').textContent = getContextLabel(S.roomType);
+
+      // Update Signal Chain Banner
+      $('chainNodes').innerHTML = [
+        `DC Load: <span>${reconstructedI.toFixed(2)}A</span>`,
+        `ACS712 Pin: <span>${outmV.toFixed(0)}mV</span>`,
+        `10k/20k Divider: <span>${adcMilliVolts.toFixed(0)}mV</span>`,
+        `ESP32 ADC: <span>GPIO 4</span>`,
+        `P = V&times;I: <span>${P.toFixed(1)}W</span>`
+      ].map((txt, idx) => `<div class="chain-node">${txt}</div>${idx < 4 ? '<span class="chain-arrow">&rarr;</span>' : ''}`).join('');
+
+      // Anomaly Verdict UI
+      const vBox = $('verdictBox');
+      const vText = $('verdictText');
+      const vScore = $('verdictScore');
+      const vIcon = $('verdictIcon');
+      const fillBar = $('scoreBarFill');
+
+      fillBar.style.width = `${Math.min(100, Math.max(3, anomScore * 100))}%`;
+      $('scoreBarLabel').textContent = `${(anomScore * 100).toFixed(1)}%`;
+
+      if (isAnomaly) {
+        vBox.className = 'verdict-box abnormal';
+        vText.textContent = 'ABNORMAL CONSUMPTION ANOMALY';
+        vIcon.textContent = '⚠';
+        vScore.textContent = `Anomaly Probability: ${(anomScore * 100).toFixed(1)}%`;
+      } else {
+        vBox.className = 'verdict-box normal';
+        vText.textContent = 'NORMAL OPERATION VERIFIED';
+        vIcon.textContent = '✔';
+        vScore.textContent = `Confidence: ${((1 - anomScore) * 100).toFixed(1)}%`;
+      }
+
+      // Run Generative AI Layer
+      runGenerativeAI(reconstructedI, P, isAnomaly, sch, d);
+
+      // Event Logging
+      if (S.lastAnom !== null && S.lastAnom !== isAnomaly) {
+        addLog(
+          isAnomaly ? `DNN Flagged ABNORMAL Consumption (${(anomScore * 100).toFixed(0)}% score)` : 'System returned to NORMAL pattern',
+          isAnomaly ? 'ALERT' : 'OK',
+          `${P.toFixed(1)}W | ${reconstructedI.toFixed(2)}A`
+        );
+      }
+      S.lastAnom = isAnomaly;
+
+      // Update Chart.js Rolling Graph
+      const cData = chart.data;
+      cData.labels.push(now.toTimeString().slice(0, 8));
+      cData.datasets[0].data.push(parseFloat(P.toFixed(2)));
+      cData.datasets[0].pointBackgroundColor.push(isAnomaly ? '#ff4d6d' : '#ffb703');
+
+      if (cData.labels.length > 40) {
+        cData.labels.shift();
+        cData.datasets[0].data.shift();
+        cData.datasets[0].pointBackgroundColor.shift();
+      }
+      chart.update();
+    }
+
+    /* ==========================================================
+       6. UI CONTROLS & INTERACTIVE EVENT HANDLERS
+       ========================================================= */
+    function toggleLoad() {
+      S.load = !S.load;
+      $('loadBtn').classList.toggle('active-load', S.load);
+      $('loadBtnText').textContent = S.load ? 'Switch Load OFF' : 'Switch Load ON';
+      $('loadStateText').textContent = S.load ? 'ACTIVE (RUNNING)' : 'OFF';
+      $('loadStateText').style.color = S.load ? 'var(--accent)' : 'var(--text-mute)';
+      addLog(`Classroom Load switched ${S.load ? 'ON' : 'OFF'} manually`, 'INFO', `${S.level}A requested`);
+    }
+
+    function injectSpike() {
+      S.faultTimer = 6;
+      addLog('Current surge fault injected (1.62A spike for 6 sec)', 'ALERT', 'Overcurrent');
+    }
+
+    function updateCurrentSlider(val) {
+      S.level = parseFloat(val);
+      $('currSliderVal').textContent = S.level.toFixed(2);
+    }
+
+    function updateVoltage(val) {
+      S.V = Math.max(1, parseFloat(val) || 5.0);
+      $('voltValDisplay').textContent = S.V.toFixed(1);
+      addLog(`System supply voltage updated to ${S.V}V`, 'CONFIG', 'Supply');
+    }
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      event.target.classList.add('active');
+      $(tabId).classList.add('active');
+    }
+
+    function addLog(desc, type, note) {
+      const timeStr = new Date().toLocaleTimeString();
+      S.historyLogs.unshift({ time: timeStr, desc, type, note });
+      if (S.historyLogs.length > 50) S.historyLogs.pop();
+
+      const list = $('logList');
+      if (list) {
+        const li = document.createElement('li');
+        li.className = 'log-item';
+        const badgeClass = type === 'ALERT' ? 'badge-alert' : 'badge-ok';
+        li.innerHTML = `
+          <span class="log-time">${timeStr}</span>
+          <span class="log-desc">${desc}</span>
+          <span class="log-badge ${badgeClass}">${type}</span>
+        `;
+        list.prepend(li);
+        while (list.children.length > 25) list.lastChild.remove();
+      }
+      $('logCount').textContent = S.historyLogs.length;
+    }
+
+    function downloadCSV() {
+      if (S.historyLogs.length === 0) {
+        alert('No log entries recorded yet.');
+        return;
+      }
+      let csvContent = "data:text/csv;charset=utf-8,Time,Event,Type,Note\n";
+      S.historyLogs.forEach(row => {
+        csvContent += `"${row.time}","${row.desc}","${row.type}","${row.note}"\n`;
+      });
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `wattwise_audit_log_${new Date().toISOString().slice(0,10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    /* ==========================================================
+       7. AUTOMATED 2-MINUTE EXAMINER REVIEW CONTROLLER
+       ========================================================== */
+    const reviewSteps = [
+      {
+        step: 1,
+        title: "1. Baseline Idle",
+        roomType: 'normal_class',
+        load: false,
+        curr: 0.40,
+        scenarioVacancy: false,
+        speech: "1. Baseline Idle: Room Type = Normal Class (Class Hours). Occupancy is automatically calculated as Occupied. With Load OFF, current is near zero and DNN confirms Normal idle state."
+      },
+      {
+        step: 2,
+        title: "2. Normal Load (Class)",
+        roomType: 'normal_class',
+        load: true,
+        curr: 0.40,
+        scenarioVacancy: false,
+        speech: "2. Normal Load: Room Type = Normal Class (automatically Occupied). Load is ON. Power curve rises and DNN confirms authorized classroom energy usage."
+      },
+      {
+        step: 3,
+        title: "3. Energy Waste (Unexpected Vacancy)",
+        roomType: 'normal_class',
+        load: true,
+        curr: 0.40,
+        scenarioVacancy: true,
+        speech: "3. Energy Waste (Unexpected Vacancy Override): Room Type = Normal Class, but an unexpected vacancy occurs (room is empty while loads stay ON). Occupancy switches to Empty, triggering DNN anomaly alert and GenAI energy-waste reasoning."
+      },
+      {
+        step: 4,
+        title: "4. Night Consumption",
+        roomType: 'after_hours',
+        load: true,
+        curr: 0.40,
+        scenarioVacancy: false,
+        speech: "4. Night Consumption: Room Type is After-Hours / Night. Facility is closed and occupancy is automatically Empty. Load is ON, triggering an after-hours unauthorized consumption anomaly."
+      },
+      {
+        step: 5,
+        title: "5. Current Surge Fault",
+        roomType: 'normal_class',
+        load: true,
+        curr: 1.50,
+        spike: true,
+        scenarioVacancy: false,
+        speech: "5. Current Surge Fault: Room Type = Normal Class (Occupied), but a current spike is injected. DNN flags a 99% surge anomaly, and GenAI warns of a short-circuit hazard."
+      }
+    ];
+
+    function runReviewStep(stepNum) {
+      document.querySelectorAll('.step-btn').forEach((b, idx) => {
+        b.classList.toggle('active', idx + 1 === stepNum);
+      });
+
+      const cfg = reviewSteps[stepNum - 1];
+      if (!cfg) return;
+
+      // 1. Set scenario vacancy override flag
+      S.scenarioVacancy = !!cfg.scenarioVacancy;
+
+      // 2. Set Room Type
+      S.roomType = cfg.roomType;
+      if ($('roomTypeSelect')) $('roomTypeSelect').value = cfg.roomType;
+      updateRoomTypeLabel(cfg.roomType);
+
+      // 3. Calculate automatic occupancy
+      S.occ = calculateOccupancy(S.roomType);
+      updateOccupancyUI();
+
+      // 4. Apply Load State
+      if (S.load !== cfg.load) toggleLoad();
+
+      // 5. Apply Current Level
+      updateCurrentSlider(cfg.curr);
+      if ($('currSlider')) $('currSlider').value = cfg.curr;
+
+      if (cfg.spike) {
+        injectSpike();
+      }
+
+      // Immediate tick to refresh DNN, AI, and telemetry displays
+      tick();
+
+      // Display Reviewer Speech Box
+      const speechBox = $('reviewSpeech');
+      speechBox.style.display = 'block';
+      speechBox.innerHTML = `<strong>Examiner Talking Point (Step ${cfg.step}):</strong> "${cfg.speech}"`;
+    }
+
+    // Initialize System
+    addLog('WattWise System Initialized with ESP32-S3 and ACS712 calibration offset @ 2500mV', 'INIT', 'Baseline 0A');
+    setInterval(tick, 1000);
+    tick();
+  </script>
+</body>
+</html>
